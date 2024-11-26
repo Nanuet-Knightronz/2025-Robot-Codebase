@@ -21,9 +21,9 @@ Full codebase for Nanuet Knightronz's FRC robotics team: 2025 Competition Robot
 > KAUAI LABS
 >  - NavX IMU
 >  - Component of SwerveDrive
-> 
 
-
+## Additional Documentation
+- [Backend Details](README_gitflowtimeline.md)
 
 **Full Changelog**: https://github.com/Nanuet-Knightronz/SwerveDrive/commits/beta_v1.0.0
 
