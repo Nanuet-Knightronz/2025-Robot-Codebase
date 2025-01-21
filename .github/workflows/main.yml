@@ -7,9 +7,9 @@ name: SWERVEDRIVECI/CD
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ SwerveDrive ]
   pull_request:
-    branches: [ main ]
+    branches: [ SwerveDrive ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
