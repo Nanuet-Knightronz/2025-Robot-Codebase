@@ -3,7 +3,7 @@ package frc.robot;
 public class Constants {
     public static class Intake {
         public static final int kIntakeMotorTopPWMId = 1;
-        public static final int kIntakeMotorBottomPWMId = 11;
+        public static final int kIntakeMotorBottomPWMId = 0;
     }
     public static class Arm {
         public static final int kArmMotorLeftPWMId = 14;

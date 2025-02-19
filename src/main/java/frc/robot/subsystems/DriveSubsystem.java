@@ -21,10 +21,10 @@ public class DriveSubsystem extends SubsystemBase {
   private final SparkMax rightFollower;
 
   public DriveSubsystem() {
-    leftLeader = new SparkMax(1, MotorType.kBrushless);
-    leftFollower = new SparkMax(2, MotorType.kBrushless);
-    rightLeader = new SparkMax(3, MotorType.kBrushless);
-    rightFollower = new SparkMax(4, MotorType.kBrushless);
+    leftLeader = new SparkMax(13, MotorType.kBrushless);
+    leftFollower = new SparkMax(12, MotorType.kBrushless);
+    rightLeader = new SparkMax(11, MotorType.kBrushless);
+    rightFollower = new SparkMax(10, MotorType.kBrushless);
 
     // Set up configurations as in the original code
     SparkMaxConfig globalConfig = new SparkMaxConfig();

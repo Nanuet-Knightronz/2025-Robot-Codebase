@@ -12,12 +12,12 @@ import frc.robot.subsystems.IntakeSubsystem;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeCommand extends Command {
   /** Creates a new IntakeCommand. */
-  private static IntakeSubsystem m_IntakeSubsystem;
-  private static double velocity;
-
-  public IntakeCommand(IntakeSubsystem intakeSubsystem, double velocity) {
-    this.m_IntakeSubsystem = intakeSubsystem;
-    this.velocity = velocity;
+    private final IntakeSubsystem m_IntakeSubsystem;
+    private final double velocity;
+  
+    public IntakeCommand(IntakeSubsystem intakeSubsystem, double velocity) {
+      this.m_IntakeSubsystem = intakeSubsystem;
+      this.velocity = velocity;
     addRequirements(intakeSubsystem);
   }
 

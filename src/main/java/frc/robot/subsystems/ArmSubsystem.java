@@ -11,8 +11,8 @@ public class ArmSubsystem extends SubsystemBase {
     private SparkMax m_RightRaise;
 
     public ArmSubsystem() {
-        m_LeftRaise = new SparkMax(Constants.Arm.kArmMotorLeftPWMId, MotorType.kBrushless);
-        m_RightRaise = new SparkMax(Constants.Arm.kArmMotorRightPWMId, MotorType.kBrushless);
+        m_LeftRaise = new SparkMax(14, MotorType.kBrushless);
+        m_RightRaise = new SparkMax(15, MotorType.kBrushless);
 
         
     }
@@ -30,13 +30,13 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void raise() {
-        m_LeftRaise.set(-1);
-        m_RightRaise.set(1);
+        m_LeftRaise.set(-.3);
+        m_RightRaise.set(.3);
     }
 
     public void lower() {
-        m_LeftRaise.set(1);
-        m_RightRaise.set(-1);
+        m_LeftRaise.set(.3);
+        m_RightRaise.set(-.3);
     }
 
     public void idleArm() {

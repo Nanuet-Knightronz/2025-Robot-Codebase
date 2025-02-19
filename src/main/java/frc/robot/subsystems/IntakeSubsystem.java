@@ -22,7 +22,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void moveRollers(double velocity) {
     m_TopRoller.set(velocity);
-    m_BottomRoller.set(velocity);
+    m_BottomRoller.set(-velocity);
   }
 
   @Override
