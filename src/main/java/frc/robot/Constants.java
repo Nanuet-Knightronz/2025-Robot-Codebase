@@ -8,6 +8,10 @@ public class Constants {
     public static class Arm {
         public static final int kArmMotorLeftPWMId = 14;
         public static final int kArmMotorRightPWMId = 15;
+        public static final double armkP = 0.05;  
+        public static final double armkI = 0.0;   
+        public static final double armkD = 0.002; 
+
     }
     public static class Drivetrain {
         public static final double kMaxSpeed = .9;

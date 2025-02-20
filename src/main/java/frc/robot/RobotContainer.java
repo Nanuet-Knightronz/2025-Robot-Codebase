@@ -44,6 +44,9 @@ public class RobotContainer {
     m_driveController.povUp().whileTrue(armSubsystem.raiseClimber());
     m_driveController.povDown().whileTrue(armSubsystem.lowerClimber());
 
+    //arm setpoints:
+    m_driveController.a().onTrue(armSubsystem.moveArmCommand(0.0));
+
     //intake stuff
     m_driveController.rightBumper().whileTrue(new IntakeCommand(intakeSubsystem, 0.5));
     m_driveController.rightTrigger().whileTrue(new IntakeCommand(intakeSubsystem, -0.5));
