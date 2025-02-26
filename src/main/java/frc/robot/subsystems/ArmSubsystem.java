@@ -30,32 +30,27 @@ public class ArmSubsystem extends SubsystemBase {
 
         armPID = new PIDController(Constants.Arm.armkP, Constants.Arm.armkI, Constants.Arm.armkD);
         armPID.setTolerance(1.0); // how much stuff it can be off by
-
-        targetPosition = armEncoder.getPosition();
-    }
-
-    public void moveArmToPosition(double position) {
-      targetPosition = position;
     }
 
     @Override
     public void periodic() {
-      double currentPosition = armEncoder.getPosition();
-        
-        // ✅ Calculate the PID output based on the error
-        double pidOutput = armPID.calculate(currentPosition, targetPosition);
-
-        // ✅ Limit the motor speed to prevent sudden jumps
-        double motorOutput = MathUtil.clamp(pidOutput, -.3, .3);
-
-        // ✅ Apply output to motor
-        m_LeftRaise.set(motorOutput);
-
-        SmartDashboard.putNumber("Arm Position", currentPosition);
+      
     }
 
     public Command moveArmCommand(double position) {
-      return runEnd(() -> moveArmToPosition(position), () -> moveArmToPosition(targetPosition));
+
+      return run(()-> {
+        double armPosition = armEncoder.getPosition();
+        //no flipping pls
+        double target = MathUtil.clamp(position, 0, .75);
+
+        double armPIDResult = armPID.calculate(armPosition, target);
+
+        double motorOutput = MathUtil.clamp(armPIDResult, -.3, .3);
+
+        m_LeftRaise.set(motorOutput);
+        m_RightRaise.set(-motorOutput);
+      });
     }
 
     public Command raiseClimber() {
