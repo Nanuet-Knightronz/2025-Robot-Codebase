@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.Constants.*;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.PhotonNavCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -45,6 +46,7 @@ public class RobotContainer {
     m_driveController.povDown().whileTrue(armSubsystem.lowerClimber());
 
     //arm setpoints:
+    //DO NOT SET TO 40 OR SMTH; WILL BREAK ROBOT EXTREMELY QUICKLY 
     m_driveController.a().onTrue(armSubsystem.moveArmCommand(1.0));
     m_driveController.b().onTrue(armSubsystem.moveArmCommand(0.5));
     m_driveController.x().onTrue(armSubsystem.moveArmCommand(0.25));
@@ -53,5 +55,8 @@ public class RobotContainer {
     //intake stuff
     m_driveController.rightBumper().whileTrue(new IntakeCommand(intakeSubsystem, 0.5));
     m_driveController.rightTrigger().whileTrue(new IntakeCommand(intakeSubsystem, -0.5));
+
+    //photonvision alignment
+    m_driveController.leftBumper().whileTrue(new PhotonNavCommand(driveSubsystem));
   }
 }

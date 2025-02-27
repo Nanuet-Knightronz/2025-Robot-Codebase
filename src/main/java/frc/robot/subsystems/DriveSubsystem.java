@@ -11,6 +11,13 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.PIDController;
+
+import org.opencv.photo.Photo;
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
+
+import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -19,6 +26,9 @@ public class DriveSubsystem extends SubsystemBase {
   private final SparkMax leftFollower;
   private final SparkMax rightLeader;
   private final SparkMax rightFollower;
+
+  private final PhotonCamera camera = new PhotonCamera("photonvision");
+  private final PIDController photonPID = new PIDController(0.02, 0, 0.001); 
 
   public DriveSubsystem() {
     leftLeader = new SparkMax(13, MotorType.kBrushless);
@@ -52,6 +62,15 @@ public class DriveSubsystem extends SubsystemBase {
   public void drive(double forward, double rotation) {
     leftLeader.set(forward + rotation);
     rightLeader.set(forward - rotation);
+  }
+
+  public double getTurnAdjustment() {
+    PhotonPipelineResult result = camera.getLatestResult();
+    if (result.hasTargets()) {
+        double yaw = result.getBestTarget().getYaw(); // Horizontal offset from center
+        return photonPID.calculate(yaw, 0); // PID correction to center the target
+    }
+    return 0.0; // No target, don't turn
   }
 
   @Override
