@@ -6,6 +6,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
@@ -16,41 +17,48 @@ import frc.robot.Constants;
 public class ArmSubsystem extends SubsystemBase {
     private SparkMax m_LeftRaise;
     private SparkMax m_RightRaise;
-    private final RelativeEncoder armEncoder;
+
+    private final AbsoluteEncoder armEncoder;
+    private final RelativeEncoder relEncoder;
+
     private final PIDController armPID;
 
     private double targetPosition;
+    private double armPosition;
+    private double armPIDResult;
 
     public ArmSubsystem() {
 
         m_LeftRaise = new SparkMax(14, MotorType.kBrushless);
         m_RightRaise = new SparkMax(15, MotorType.kBrushless);
 
-        armEncoder = m_LeftRaise.getAlternateEncoder();
+        armEncoder = m_LeftRaise.getAbsoluteEncoder();
+        relEncoder = m_LeftRaise.getEncoder();
 
         armPID = new PIDController(Constants.Arm.armkP, Constants.Arm.armkI, Constants.Arm.armkD);
-        armPID.setTolerance(1.0); // how much stuff it can be off by
+        // armPID.setTolerance(1.0); // how much stuff it can be off by
+
+        resetEncoder();
     }
 
     @Override
     public void periodic() {
-      
+
+        armPosition = relEncoder.getPosition();
+        armPIDResult = armPID.calculate(armPosition, targetPosition);
+    
+        SmartDashboard.putNumber("Encoder", relEncoder.getPosition());
+        SmartDashboard.putNumber("PID Result", armPIDResult);
+        SmartDashboard.putNumber("Setpoint", targetPosition);
     }
 
     public Command moveArmCommand(double position) {
 
-      return run(()-> {
-        double armPosition = armEncoder.getPosition();
-        //no flipping pls
-        double target = MathUtil.clamp(position, 0, .75);
-
-        double armPIDResult = armPID.calculate(armPosition, target);
-
-        double motorOutput = MathUtil.clamp(armPIDResult, -.3, .3);
-
-        m_LeftRaise.set(motorOutput);
-        m_RightRaise.set(-motorOutput);
-      });
+        return run(()-> {
+            this.targetPosition = position;
+            m_LeftRaise.set(armPIDResult);
+            m_RightRaise.set(-armPIDResult);
+        });
     }
 
     public Command raiseClimber() {
@@ -77,6 +85,7 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public void resetEncoder() {
-      armEncoder.setPosition(0);
-  }
+//       armEncoder.setPosition(0);
+//   }
+    }
 }

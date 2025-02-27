@@ -28,8 +28,8 @@ public class DriveCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double forward = -joystick.getLeftY();  // Invert Y for forward movement
-    double rotation = joystick.getRightX(); // X-axis controls rotation
+    double forward = -joystick.getLeftY() * Math.abs(joystick.getLeftY());  // Invert Y for forward movement
+    double rotation = joystick.getRightX() * Math.abs(joystick.getRightX()); // X-axis controls rotation
 
     driveSubsystem.drive(forward, rotation);
   }
