@@ -12,10 +12,12 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import org.opencv.photo.Photo;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -67,9 +69,17 @@ public class DriveSubsystem extends SubsystemBase {
   public double getTurnAdjustment() {
     PhotonPipelineResult result = camera.getLatestResult();
     if (result.hasTargets()) {
-        double yaw = result.getBestTarget().getYaw(); // Horizontal offset from center
-        return photonPID.calculate(yaw, 0); // PID correction to center the target
+
+      PhotonTrackedTarget target = result.getBestTarget();
+      double yaw = target.getYaw(); // Horizontal offset from center
+      int targetID = target.getFiducialId(); // AprilTag ID
+
+      SmartDashboard.putNumber("AprilTag ID", targetID);
+      SmartDashboard.putNumber("AprilTag Yaw", yaw);
+
+      return photonPID.calculate(yaw, 0); // PID correction to center the target
     }
+    SmartDashboard.putString("AprilTag Status", "No Target Found");
     return 0.0; // No target, don't turn
   }
 
