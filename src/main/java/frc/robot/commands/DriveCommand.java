@@ -31,6 +31,10 @@ public class DriveCommand extends Command {
     double forward = -joystick.getLeftY() * Math.abs(joystick.getLeftY());  // Invert Y for forward movement
     double rotation = joystick.getRightX() * Math.abs(joystick.getRightX()); // X-axis controls rotation
 
+    if (joystick.leftBumper().getAsBoolean()) {
+      rotation = driveSubsystem.getVisionCorrection();
+    }
+
     driveSubsystem.drive(forward, rotation);
   }
 

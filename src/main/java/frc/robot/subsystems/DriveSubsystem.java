@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -10,15 +6,23 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
-  /** Creates a new DriveSubsystem. */
   private final SparkMax leftLeader;
   private final SparkMax leftFollower;
   private final SparkMax rightLeader;
   private final SparkMax rightFollower;
+  private final PhotonCamera camera;
+  private final PIDController visionPID;
+
+  private static final double kP = 0.02; // Proportional gain (Adjust based on testing)
+  private static final double kI = 0.0;  // Integral gain (Usually 0 for vision)
+  private static final double kD = 0.001; // Derivative gain (Smooths motion)
 
   public DriveSubsystem() {
     leftLeader = new SparkMax(13, MotorType.kBrushless);
@@ -26,7 +30,11 @@ public class DriveSubsystem extends SubsystemBase {
     rightLeader = new SparkMax(11, MotorType.kBrushless);
     rightFollower = new SparkMax(10, MotorType.kBrushless);
 
-    // Set up configurations as in the original code
+    camera = new PhotonCamera("USB_Camera"); // Change to actual camera name
+
+    visionPID = new PIDController(kP, kI, kD);
+    visionPID.setTolerance(1.0); // Degrees of yaw tolerance before stopping corrections
+
     SparkMaxConfig globalConfig = new SparkMaxConfig();
       globalConfig.smartCurrentLimit(40)
       .idleMode(IdleMode.kBrake);
@@ -54,8 +62,22 @@ public class DriveSubsystem extends SubsystemBase {
     rightLeader.set(forward - rotation);
   }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
+  public double getVisionYaw() {
+    PhotonPipelineResult result = camera.getLatestResult();
+    if (result.hasTargets()) {
+      return result.getBestTarget().getYaw();
+    }
+    return 0; // No target found
   }
+
+  public double getVisionCorrection() {
+    double yaw = getVisionYaw();
+    if (Math.abs(yaw) < visionPID.getPositionTolerance()) {
+      return 0; // Don't correct if within tolerance
+    }
+    return visionPID.calculate(yaw, 0); // PID correction
+  }
+
+  @Override
+  public void periodic() {}
 }

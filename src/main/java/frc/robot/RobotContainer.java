@@ -58,6 +58,6 @@ public class RobotContainer {
     m_driveController.rightTrigger().whileTrue(new IntakeCommand(intakeSubsystem, -0.5));
 
     //photonvision alignment
-    //m_driveController.leftBumper().whileTrue(driveSubsystem.y);
+    m_driveController.leftBumper().whileTrue(new DriveCommand(driveSubsystem, m_driveController));
   }
 }
