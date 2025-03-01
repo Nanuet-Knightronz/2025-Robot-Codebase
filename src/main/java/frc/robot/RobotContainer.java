@@ -51,7 +51,7 @@ public class RobotContainer {
     m_driveController.b().onTrue(armSubsystem.moveArmCommand(-10));
     m_driveController.x().onTrue(armSubsystem.moveArmCommand(-20));
     m_driveController.y().onTrue(armSubsystem.moveArmCommand(-32));
-    m_driveController.button(7).onTrue(armSubsystem.moveArmCommand(-40));
+    m_driveController.button(7).onTrue(armSubsystem.moveArmCommand(-60));
 
     //intake stuff
     m_driveController.rightTrigger().whileTrue(new IntakeCommand(intakeSubsystem, 0.5));

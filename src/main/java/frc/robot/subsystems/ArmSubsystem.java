@@ -35,8 +35,8 @@ public class ArmSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        armPosition = relEncoder.getPosition();
-        armPIDResult = armPID.calculate(armPosition, targetPosition);
+        armPosition = MathUtil.clamp(relEncoder.getPosition(),-55,0);
+        armPIDResult = MathUtil.clamp(armPID.calculate(armPosition, targetPosition),-0.5,0.5);
         SmartDashboard.putNumber("Encoder", relEncoder.getPosition());
         SmartDashboard.putNumber("PID Result", armPIDResult);
         SmartDashboard.putNumber("Setpoint", targetPosition);
@@ -51,9 +51,9 @@ public class ArmSubsystem extends SubsystemBase {
 
         //double motorOutput = MathUtil.clamp(armPIDResult, -.3, .3);
 
-        this.targetPosition = position;
-        m_LeftRaise.set(MathUtil.clamp(armPIDResult,-0.5,0.5));
-        m_RightRaise.set(-MathUtil.clamp(armPIDResult,-0.5,0.5));
+        this.targetPosition = MathUtil.clamp(position, -55, 0);
+        m_LeftRaise.set(armPIDResult);
+        m_RightRaise.set(-armPIDResult);
       });
     }
 
@@ -68,16 +68,19 @@ public class ArmSubsystem extends SubsystemBase {
     public void raise() {
         m_LeftRaise.set(-.3);
         m_RightRaise.set(.3);
+        targetPosition = armPosition;
     }
 
     public void lower() {
         m_LeftRaise.set(.3);
         m_RightRaise.set(-.3);
+        targetPosition = armPosition;
     }
 
     public void idleArm() {
         m_LeftRaise.set(0);
         m_RightRaise.set(0);
+        moveArmCommand(relEncoder.getPosition());
     }
 
     public void resetEncoder() {
