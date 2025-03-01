@@ -7,7 +7,7 @@ package frc.robot;
 import frc.robot.Constants.*;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.PhotonNavCommand;
+// import frc.robot.commands.PhotonNavCommand;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -35,7 +35,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     driveSubsystem.setDefaultCommand(new DriveCommand(driveSubsystem, m_driveController));
-
+   
     configureBindings();
   }
 
@@ -47,16 +47,17 @@ public class RobotContainer {
 
     //arm setpoints:
     //DO NOT SET TO 40 OR SMTH; WILL BREAK ROBOT EXTREMELY QUICKLY 
-    m_driveController.a().onTrue(armSubsystem.moveArmCommand(1.0));
-    m_driveController.b().onTrue(armSubsystem.moveArmCommand(0.5));
-    m_driveController.x().onTrue(armSubsystem.moveArmCommand(0.25));
-    m_driveController.y().onTrue(armSubsystem.moveArmCommand(0.0));
+    m_driveController.a().onTrue(armSubsystem.moveArmCommand(0));
+    m_driveController.b().onTrue(armSubsystem.moveArmCommand(-10));
+    m_driveController.x().onTrue(armSubsystem.moveArmCommand(-20));
+    m_driveController.y().onTrue(armSubsystem.moveArmCommand(-32));
+    m_driveController.button(7).onTrue(armSubsystem.moveArmCommand(-40));
 
     //intake stuff
     m_driveController.rightBumper().whileTrue(new IntakeCommand(intakeSubsystem, 0.5));
     m_driveController.rightTrigger().whileTrue(new IntakeCommand(intakeSubsystem, -0.5));
 
     //photonvision alignment
-    m_driveController.leftBumper().whileTrue(new PhotonNavCommand(driveSubsystem));
+    //m_driveController.leftBumper().whileTrue(driveSubsystem.y);
   }
 }
