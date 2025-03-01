@@ -54,8 +54,8 @@ public class RobotContainer {
     m_driveController.button(7).onTrue(armSubsystem.moveArmCommand(-40));
 
     //intake stuff
-    m_driveController.rightBumper().whileTrue(new IntakeCommand(intakeSubsystem, 0.5));
-    m_driveController.rightTrigger().whileTrue(new IntakeCommand(intakeSubsystem, -0.5));
+    m_driveController.rightTrigger().whileTrue(new IntakeCommand(intakeSubsystem, 0.5));
+    m_driveController.rightBumper().whileTrue(new IntakeCommand(intakeSubsystem, -0.5));
 
     //photonvision alignment
     m_driveController.leftBumper().whileTrue(new DriveCommand(driveSubsystem, m_driveController));

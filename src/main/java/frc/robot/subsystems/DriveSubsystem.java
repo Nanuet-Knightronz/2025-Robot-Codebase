@@ -75,7 +75,7 @@ public class DriveSubsystem extends SubsystemBase {
     if (Math.abs(yaw) < visionPID.getPositionTolerance()) {
       return 0; // Don't correct if within tolerance
     }
-    return visionPID.calculate(yaw, 0); // PID correction
+    return visionPID.calculate(-yaw, 0); // PID correction
   }
 
   @Override
