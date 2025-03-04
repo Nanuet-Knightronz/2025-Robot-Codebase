@@ -13,8 +13,13 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import com.pathplanner.lib.path.*;
+import com.pathplanner.lib.auto.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -59,5 +64,16 @@ public class RobotContainer {
 
     //photonvision alignment
     m_driveController.leftBumper().whileTrue(new DriveCommand(driveSubsystem, m_driveController));
+  }
+
+  public Command getAutonomousCommand() {
+    try{
+      PathPlannerPath path = PathPlannerPath.fromPathFile("src\\main\\deploy\\pathplanner\\paths\\Example Path.path");
+
+      return AutoBuilder.followPath(path);
+    } catch (Exception e) {
+        DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+        return Commands.none();
+    }
   }
 }

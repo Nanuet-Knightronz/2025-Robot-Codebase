@@ -6,19 +6,31 @@ import com.pathplanner.lib.controllers.PPLTVController;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
+
+import java.lang.reflect.Field;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 
 import com.pathplanner.lib.config.RobotConfig;
 
@@ -27,8 +39,13 @@ public class DriveSubsystem extends SubsystemBase {
   private final SparkMax leftFollower;
   private final SparkMax rightLeader;
   private final SparkMax rightFollower;
+  private final RelativeEncoder leftEncode;
+  private final RelativeEncoder rightEncode;
   private final PhotonCamera camera;
   private final PIDController visionPID;
+  private final AHRS navX;
+  private final DifferentialDriveOdometry odometry;
+  private final Field2d field;
 
   private static final double kP = 0.02; // Proportional gain (Adjust based on testing)
   private static final double kI = 0.0;  // Integral gain (Usually 0 for vision)
@@ -68,8 +85,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     leftLeader = new SparkMax(13, MotorType.kBrushless);
     leftFollower = new SparkMax(12, MotorType.kBrushless);
+    leftEncode = leftLeader.getEncoder();
     rightLeader = new SparkMax(11, MotorType.kBrushless);
     rightFollower = new SparkMax(10, MotorType.kBrushless);
+    rightEncode = rightLeader.getEncoder();
 
     camera = new PhotonCamera("USB_Camera"); // Change to actual camera name
 
@@ -96,6 +115,12 @@ public class DriveSubsystem extends SubsystemBase {
     leftFollower.configure(leftFollowerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightLeader.configure(rightLeaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightFollower.configure(rightFollowerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    navX = new AHRS(NavXComType.kMXP_SPI);
+    navX.reset();
+
+    odometry = new DifferentialDriveOdometry(navX.getRotation2d(), leftEncode.getPosition(), rightEncode.getPosition());
+    field = new Field2d();
   }
 
   
@@ -123,12 +148,14 @@ public class DriveSubsystem extends SubsystemBase {
   
   public Pose2d getPose() {
     // Return the current pose (e.g., from your odometry system)
-    return new Pose2d(0, 0, new Rotation2d(0)); // Replace with actual pose
+    //return new Pose2d(0, 0, new Rotation2d(0)); // Replace with actual pose
+    return odometry.getPoseMeters();
 }
 
 public void resetPose(Pose2d pose) {
     // Reset the robot pose (e.g., to a known position)
     // Example: odometry.resetPosition(pose, new Rotation2d());
+    odometry.resetPosition(navX.getRotation2d(), null, pose);
 }
 
 public ChassisSpeeds getRobotRelativeSpeeds() {
@@ -146,5 +173,12 @@ public void driveRobotRelative(ChassisSpeeds speeds) {
 }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    navX.getAngle();
+    SmartDashboard.putNumber("navX Angle", navX.getAngle());
+    SmartDashboard.putData("Field", field);
+    odometry.update(navX.getRotation2d(), leftEncode.getPosition(), rightEncode.getPosition());
+    field.setRobotPose(odometry.getPoseMeters());
+
+  }
 }
