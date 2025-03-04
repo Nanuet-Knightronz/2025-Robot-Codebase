@@ -1,5 +1,7 @@
 package frc.robot;
 
+import com.pathplanner.lib.config.RobotConfig;
+
 public class Constants {
     public static class Intake {
         public static final int kIntakeMotorTopPWMId = 1;

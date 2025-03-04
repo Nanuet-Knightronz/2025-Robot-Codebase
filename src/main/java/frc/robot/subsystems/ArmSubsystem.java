@@ -52,8 +52,8 @@ public class ArmSubsystem extends SubsystemBase {
         //double motorOutput = MathUtil.clamp(armPIDResult, -.3, .3);
 
         this.targetPosition = MathUtil.clamp(position, -55, 0);
-        m_LeftRaise.set(armPIDResult);
-        m_RightRaise.set(-armPIDResult);
+        m_LeftRaise.set(MathUtil.clamp(armPIDResult, -.5, .5));
+        m_RightRaise.set(-MathUtil.clamp(armPIDResult,-.5, .5));
       });
     }
 
