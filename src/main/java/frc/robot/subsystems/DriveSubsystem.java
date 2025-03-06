@@ -8,12 +8,10 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 
 import java.lang.reflect.Field;
 
@@ -26,69 +24,74 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.robot.RobotContainer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 
-import com.pathplanner.lib.config.RobotConfig;
 
 public class DriveSubsystem extends SubsystemBase {
   private final SparkMax leftLeader;
   private final SparkMax leftFollower;
   private final SparkMax rightLeader;
   private final SparkMax rightFollower;
-  private final RelativeEncoder leftEncode;
-  private final RelativeEncoder rightEncode;
+  private final RelativeEncoder leftEncoder;
+  private final RelativeEncoder rightEncoder;
   private final PhotonCamera camera;
   private final PIDController visionPID;
   private final AHRS navX;
   private final DifferentialDriveOdometry odometry;
   private final Field2d field;
 
+
   private static final double kP = 0.02; // Proportional gain (Adjust based on testing)
   private static final double kI = 0.0;  // Integral gain (Usually 0 for vision)
   private static final double kD = 0.001; // Derivative gain (Smooths motion)
 
+  private static final DriveSubsystem instance = new DriveSubsystem();
+
+  public static DriveSubsystem getInstance(){
+    return instance;
+  }
+
   public DriveSubsystem() {
 
     RobotConfig config = null;
-
-    try{
+    try {
       config = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      // Handle exception as needed
+    } catch (Exception e){
       e.printStackTrace();
     }
 
-    AutoBuilder.configure(
-            this::getPose, // Robot pose supplier
-            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
-            this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-            new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
-            config, // The robot configuration
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Red;
-              }
-              return false;
-            },
-            this // Reference to this subsystem to set requirements
-    );
+    // AutoBuilder.configure(
+    //         this::getPose, // Robot pose supplier
+    //         this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+    //         this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+    //         (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+    //         new PPLTVController(0.02), // PPLTVController is the built in path following controller for differential drive trains
+    //         config, // The robot configuration
+    //         () -> {
+    //           // Boolean supplier that controls when the path will be mirrored for the red alliance
+    //           // This will flip the path being followed to the red side of the field.
+    //           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+    //           var alliance = DriverStation.getAlliance();
+    //           if (alliance.isPresent()) {
+    //             return alliance.get() == DriverStation.Alliance.Red;
+    //           }
+    //           return false;
+    //         },
+    //         this // Reference to this subsystem to set requirements
+    // );
 
     leftLeader = new SparkMax(13, MotorType.kBrushless);
     leftFollower = new SparkMax(12, MotorType.kBrushless);
-    leftEncode = leftLeader.getEncoder();
+    leftEncoder = leftLeader.getEncoder();
     rightLeader = new SparkMax(11, MotorType.kBrushless);
     rightFollower = new SparkMax(10, MotorType.kBrushless);
-    rightEncode = rightLeader.getEncoder();
+    rightEncoder = rightLeader.getEncoder();
 
     camera = new PhotonCamera("USB_Camera"); // Change to actual camera name
 
@@ -100,16 +103,13 @@ public class DriveSubsystem extends SubsystemBase {
       .idleMode(IdleMode.kBrake);
 
     SparkMaxConfig rightLeaderConfig = new SparkMaxConfig();
-      rightLeaderConfig.apply(globalConfig)
-      .inverted(true);
+    rightLeaderConfig.apply(globalConfig).inverted(true);
 
     SparkMaxConfig leftFollowerConfig = new SparkMaxConfig();
-      leftFollowerConfig.apply(globalConfig)
-      .follow(leftLeader);
+    leftFollowerConfig.apply(globalConfig).follow(leftLeader);
 
     SparkMaxConfig rightFollowerConfig = new SparkMaxConfig();
-      rightFollowerConfig.apply(globalConfig)
-      .follow(rightLeader);
+    rightFollowerConfig.apply(globalConfig).follow(rightLeader);
 
     leftLeader.configure(globalConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     leftFollower.configure(leftFollowerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -119,11 +119,12 @@ public class DriveSubsystem extends SubsystemBase {
     navX = new AHRS(NavXComType.kMXP_SPI);
     navX.reset();
 
-    odometry = new DifferentialDriveOdometry(navX.getRotation2d(), leftEncode.getPosition(), rightEncode.getPosition());
+    odometry = new DifferentialDriveOdometry(navX.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
     field = new Field2d();
+
+
   }
 
-  
 
   public void drive(double forward, double rotation) {
     leftLeader.set(forward + rotation);
@@ -177,8 +178,9 @@ public void driveRobotRelative(ChassisSpeeds speeds) {
     navX.getAngle();
     SmartDashboard.putNumber("navX Angle", navX.getAngle());
     SmartDashboard.putData("Field", field);
-    odometry.update(navX.getRotation2d(), leftEncode.getPosition(), rightEncode.getPosition());
+    odometry.update(navX.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
     field.setRobotPose(odometry.getPoseMeters());
 
   }
+
 }
