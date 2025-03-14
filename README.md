@@ -1,9 +1,7 @@
 # 364 Practical Neo Swerve - The Classic 364 Swerve base - adapted for Rev motors </br>
 
 **Credit:s**
-Team 364 would like to extend a thank you to the following teams for making this project possible:
-
-*Team 4107 Storm* - This team graciously allowed us to utilize their robot chassis to develop this code.
+Stolen from Team 364's NEO repo 
 
 
 **Basic Swerve Code for a Swerve Module using REV Motors, a CTRE CANCoder, and a CTRE Pigeon Gyro** </br>
@@ -71,4 +69,4 @@ Y Button: Zero robot heading </br>
 
 ----
 
- Tested on MK4I L2 with Neo drive/Steer, Pigeon IMU, and Cancoders
+ Tested by 364 on MK4I L2 with Neo drive/Steer, Pigeon IMU, and Cancoders
