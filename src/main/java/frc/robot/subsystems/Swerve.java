@@ -14,6 +14,9 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -29,6 +32,7 @@ public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     public SwerveMod[] mSwerveMods;
     public PigeonIMU gyro;
+    public final AHRS navx;
     public RobotConfig config;
     private Field2d field = new Field2d();
 
@@ -41,9 +45,13 @@ public class Swerve extends SubsystemBase {
           Constants.AutoConstants.moduleConfig,
           Constants.Swerve.trackWidth);
 
-        gyro = new PigeonIMU(Constants.Swerve.pigeonID);
-        gyro.configFactoryDefault();
-        gyro.setYaw(0);
+        //remove the pigeon stuff, replace with navx
+        //gyro = new PigeonIMU(Constants.Swerve.pigeonID);
+        //gyro.configFactoryDefault();
+        //gyro.setYaw(0);
+
+        navx = new AHRS(NavXComType.kMXP_SPI);
+        navx.zeroYaw();
 
         mSwerveMods = new SwerveMod[] {
             new SwerveMod(0, Constants.Swerve.Mod0.constants),
@@ -156,7 +164,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public Rotation2d getGyroYaw() {
-        return Rotation2d.fromDegrees(gyro.getYaw());
+        return Rotation2d.fromDegrees(navx.getYaw());
     }
 
     public void setHeading(Rotation2d heading){
