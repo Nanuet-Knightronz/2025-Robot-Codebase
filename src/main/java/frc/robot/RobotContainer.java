@@ -27,10 +27,10 @@ public class RobotContainer {
     /* Controllers */
     private final Joystick driver = new Joystick(0);
 
-   /* Driver Controls */
-	private final int translationAxis = 1;
-	private final int strafeAxis = 0;
-	private final int rotationAxis = 2;
+    /* Driver Controls */
+    private final int translationAxis = 1;
+    private final int strafeAxis = 0;
+    private final int rotationAxis = 2;
 
     /* Driver Buttons */
     private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
@@ -68,13 +68,11 @@ public class RobotContainer {
         // Configure the button bindings
         configureButtonBindings();
 
-
         //Pathplanner commands - templates
         NamedCommands.registerCommand("marker1", Commands.print("Passed marker 1"));
         NamedCommands.registerCommand("marker2", Commands.print("Passed marker 2"));
         NamedCommands.registerCommand("print hello", Commands.print("hello"));
     
-        
         //Auto chooser
         autoChooser = AutoBuilder.buildAutoChooser("New Auto"); // Default auto will be `Commands.none()`
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -90,7 +88,7 @@ public class RobotContainer {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
 
-    //Heading lock bindings
+        // Heading lock bindings
         forwardHold.onTrue(
             new InstantCommand(() -> States.driveState = States.DriveStates.forwardHold)).onFalse(
             new InstantCommand(() -> States.driveState = States.DriveStates.standard)
@@ -103,6 +101,11 @@ public class RobotContainer {
             new InstantCommand(() -> States.driveState = States.DriveStates.DynamicLock)).onFalse(
             new InstantCommand(() -> States.driveState = States.DriveStates.standard)
         );
+
+        // X-Lock (densePizzaBox) - Pressing 'B' activates X-lock and releasing stops it
+        new JoystickButton(driver, XboxController.Button.kB.value)
+            .onTrue(new InstantCommand(() -> s_Swerve.densePizzaBox()))
+            .onFalse(new InstantCommand(() -> s_Swerve.densePizzaBoxStop()));
     }
 
     /**

@@ -125,6 +125,21 @@ public class Swerve extends SubsystemBase {
         }
     }    
 
+    //add dense pizza box function
+    public void densePizzaBox() {
+        mSwerveMods[0].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(45)), true);
+        mSwerveMods[1].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(315)), true);
+        mSwerveMods[2].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(315)), true);
+        mSwerveMods[3].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(45)), true);
+    }
+
+    //de-densify the pizza box
+    public void densePizzaBoxStop() {
+        for (SwerveMod mod : mSwerveMods) {
+            mod.setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(0)), true); // Stop all modules
+        }
+    }
+
     public Pose2d getPose() {
         return swerveOdometry.getPoseMeters();
     }
