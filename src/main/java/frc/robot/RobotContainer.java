@@ -40,6 +40,8 @@ public class RobotContainer {
 
     private final JoystickButton DynamicLock = new JoystickButton(driver, XboxController.Button.kX.value);
 
+    private final JoystickButton photonAlign = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+
     private final Trigger forwardHold = new Trigger(() -> (driver.getRawAxis(1) > 0.75));
     private final Trigger backwardHold = new Trigger(() -> (driver.getRawAxis(1) < -0.75));
 
@@ -91,6 +93,9 @@ public class RobotContainer {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
 
+        /* Photon/Apriltags Alignment */
+        photonAlign.onTrue(new AprilAlignCommand(s_Swerve));
+
         // Heading lock bindings
         forwardHold.onTrue(
             new InstantCommand(() -> States.driveState = States.DriveStates.forwardHold)).onFalse(
@@ -106,9 +111,9 @@ public class RobotContainer {
         );
 
         // X-Lock (densePizzaBox) - Pressing 'B' activates X-lock and releasing stops it
-        new JoystickButton(driver, XboxController.Button.kB.value)
-            .onTrue(new InstantCommand(() -> s_Swerve.densePizzaBox()))
-            .onFalse(new InstantCommand(() -> s_Swerve.densePizzaBoxStop()));
+        // new JoystickButton(driver, XboxController.Button.kB.value)
+        //     .onTrue(new InstantCommand(() -> s_Swerve.densePizzaBox()))
+        //     .onFalse(new InstantCommand(() -> s_Swerve.densePizzaBoxStop()));
     }
 
     /**

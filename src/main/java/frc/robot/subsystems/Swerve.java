@@ -26,8 +26,15 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+
 public class Swerve extends SubsystemBase {
     private PoseEstimator s_PoseEstimator = new PoseEstimator();
+    private PhotonCamera camera;
+    private ProfiledPIDController rotationController;
 
     public SwerveDriveOdometry swerveOdometry;
     public SwerveMod[] mSwerveMods;
@@ -45,11 +52,6 @@ public class Swerve extends SubsystemBase {
           Constants.AutoConstants.moduleConfig,
           Constants.Swerve.trackWidth);
 
-        //remove the pigeon stuff, replace with navx
-        //gyro = new PigeonIMU(Constants.Swerve.pigeonID);
-        //gyro.configFactoryDefault();
-        //gyro.setYaw(0);
-
         navx = new AHRS(NavXComType.kMXP_SPI);
         navx.zeroYaw();
 
@@ -61,8 +63,6 @@ public class Swerve extends SubsystemBase {
         };
 
         swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getGyroYaw(), getModulePositions());
-        System.out.println(getPose().getX());
-
 
         AutoBuilder.configure(
             this::getPose, // Robot pose supplier
@@ -92,6 +92,12 @@ public class Swerve extends SubsystemBase {
         PathPlannerLogging.setLogActivePathCallback((poses) -> field.getObject("path").setPoses(poses));
 
         SmartDashboard.putData("Field", field);
+
+        // Initialize PhotonVision camera and rotation controller
+        camera = new PhotonCamera("photonvision");
+        rotationController = new ProfiledPIDController(1.0, 0.0, 0.0, 
+            new TrapezoidProfile.Constraints(2 * Math.PI, Math.PI));
+        rotationController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
@@ -116,7 +122,6 @@ public class Swerve extends SubsystemBase {
         }
     }    
 
-    /* Used by Pathplanner autobuilder */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
         
@@ -125,18 +130,14 @@ public class Swerve extends SubsystemBase {
         }
     }    
 
-    //add dense pizza box function
-    public void densePizzaBox() {
-        mSwerveMods[0].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(45)), true);
-        mSwerveMods[1].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(315)), true);
-        mSwerveMods[2].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(315)), true);
-        mSwerveMods[3].setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(45)), true);
-    }
-
-    //de-densify the pizza box
-    public void densePizzaBoxStop() {
-        for (SwerveMod mod : mSwerveMods) {
-            mod.setDesiredState(new SwerveModuleState(.1, Rotation2d.fromDegrees(0)), true); // Stop all modules
+    public void alignToAprilTag() {
+        PhotonPipelineResult result = camera.getLatestResult();
+        if (result.hasTargets()) {
+            double yaw = result.getBestTarget().getYaw(); // Yaw to the best AprilTag
+            double rotationSpeed = rotationController.calculate(getHeading().getRadians(), new Rotation2d(Math.toRadians(yaw)).getRadians());
+            drive(new Translation2d(0, 0), rotationSpeed, true, false);
+        } else {
+            drive(new Translation2d(0, 0), 0, true, false);
         }
     }
 
