@@ -94,7 +94,7 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putData("Field", field);
 
         // Initialize PhotonVision camera and rotation controller
-        camera = new PhotonCamera("photonvision");
+        camera = new PhotonCamera("USB_Camera");
         rotationController = new ProfiledPIDController(1.0, 0.0, 0.0, 
             new TrapezoidProfile.Constraints(2 * Math.PI, Math.PI));
         rotationController.enableContinuousInput(-Math.PI, Math.PI);

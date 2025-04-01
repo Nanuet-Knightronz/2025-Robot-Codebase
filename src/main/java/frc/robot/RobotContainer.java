@@ -40,7 +40,7 @@ public class RobotContainer {
 
     private final JoystickButton DynamicLock = new JoystickButton(driver, XboxController.Button.kX.value);
 
-    private final JoystickButton photonAlign = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+    private final JoystickButton photonAlign = new JoystickButton(driver, XboxController.Button.kB.value);
 
     private final Trigger forwardHold = new Trigger(() -> (driver.getRawAxis(1) > 0.75));
     private final Trigger backwardHold = new Trigger(() -> (driver.getRawAxis(1) < -0.75));
