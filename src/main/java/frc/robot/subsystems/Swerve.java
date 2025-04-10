@@ -28,7 +28,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
+import edu.wpi.first.math.controller.PIDController;
+
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.vision.VisionPipeline;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 
 public class Swerve extends SubsystemBase {
@@ -43,7 +46,21 @@ public class Swerve extends SubsystemBase {
     public RobotConfig config;
     private Field2d field = new Field2d();
 
+    private final PIDController visionPID;
+
+    //photonvision PID
+    private static final double kvP = .02;
+    private static final double kvI = 0.0;  // Integral gain (Usually 0 for vision)
+    private static final double kvD = 0.001; // Derivative gain (Smooths motion)
+
     public Swerve(PoseEstimator s_PoseEstimator) {
+
+        //actually do photon stuff
+        camera = new PhotonCamera("USB_Camera");
+
+        visionPID = new PIDController(kvP, kvI, kvD);
+        visionPID.setTolerance(1.0);
+
         this.s_PoseEstimator = s_PoseEstimator;
 
         config = new RobotConfig(
@@ -94,10 +111,10 @@ public class Swerve extends SubsystemBase {
         SmartDashboard.putData("Field", field);
 
         // Initialize PhotonVision camera and rotation controller
-        camera = new PhotonCamera("USB_Camera");
         rotationController = new ProfiledPIDController(1.0, 0.0, 0.0, 
             new TrapezoidProfile.Constraints(2 * Math.PI, Math.PI));
         rotationController.enableContinuousInput(-Math.PI, Math.PI);
+
     }
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
@@ -129,17 +146,6 @@ public class Swerve extends SubsystemBase {
             mod.setDesiredState(desiredStates[mod.moduleNumber], false);
         }
     }    
-
-    public void alignToAprilTag() {
-        PhotonPipelineResult result = camera.getLatestResult();
-        if (result.hasTargets()) {
-            double yaw = result.getBestTarget().getYaw(); // Yaw to the best AprilTag
-            double rotationSpeed = rotationController.calculate(getHeading().getRadians(), new Rotation2d(Math.toRadians(yaw)).getRadians());
-            drive(new Translation2d(0, 0), rotationSpeed, true, false);
-        } else {
-            drive(new Translation2d(0, 0), 0, true, false);
-        }
-    }
 
     public Pose2d getPose() {
         return swerveOdometry.getPoseMeters();
@@ -196,6 +202,22 @@ public class Swerve extends SubsystemBase {
             mod.resetToAbsolute();
         }
     }
+
+    public double getVisionYaw() {
+        PhotonPipelineResult result = camera.getLatestResult();
+        if (result.hasTargets()) {
+            return result.getBestTarget().getYaw();
+        }
+        return 0; //no target = nothing
+    }
+
+    public double getVisionCorrection() {
+    double yaw = getVisionYaw();
+    if (Math.abs(yaw) < visionPID.getPositionTolerance()) {
+      return 0; // Don't correct if within tolerance
+    }
+    return visionPID.calculate(-yaw, 0); // PID correction
+  }
 
     @Override
     public void periodic(){

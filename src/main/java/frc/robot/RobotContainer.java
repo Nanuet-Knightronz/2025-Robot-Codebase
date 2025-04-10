@@ -66,7 +66,8 @@ public class RobotContainer {
                 () -> -driver.getRawAxis(rotationAxis), 
                 () -> robotCentric.getAsBoolean(),
                 () -> dampen.getAsBoolean(),
-                () -> 0 // Dynamic heading placeholder
+                () -> 0, // Dynamic heading placeholder
+                () -> photonAlign.getAsBoolean() //photonvision align
             )
         );
 
@@ -93,8 +94,6 @@ public class RobotContainer {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
 
-        /* Photon/Apriltags Alignment */
-        photonAlign.onTrue(new AprilAlignCommand(s_Swerve));
 
         // Heading lock bindings
         forwardHold.onTrue(

@@ -11,7 +11,10 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.math.util.Units;
+
+import edu.wpi.first.wpilibj.Joystick;
 
 
 public class SwerveCommand extends Command {    
@@ -23,9 +26,9 @@ public class SwerveCommand extends Command {
     private BooleanSupplier robotCentricSup;
     private BooleanSupplier dampenSup;
     private PIDController rotationController;
-    
+    private BooleanSupplier visionAlignSup;
 
-    public SwerveCommand(Swerve s_Swerve, DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup, BooleanSupplier robotCentricSup, BooleanSupplier dampen, DoubleSupplier dynamicHeadingSup) {
+    public SwerveCommand(Swerve s_Swerve, DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup, BooleanSupplier robotCentricSup, BooleanSupplier dampen, DoubleSupplier dynamicHeadingSup, BooleanSupplier visionAlignSup) {
         this.s_Swerve = s_Swerve;
         addRequirements(s_Swerve);
 
@@ -40,6 +43,7 @@ public class SwerveCommand extends Command {
         this.robotCentricSup = robotCentricSup;
         this.dampenSup = dampen;
         this.dynamicHeadingSup = dynamicHeadingSup;
+        this.visionAlignSup = visionAlignSup;
     }
 
     @Override
@@ -81,8 +85,12 @@ public class SwerveCommand extends Command {
                 break;
             case standard:
             
-                //normal
-                rotationVal = rotationVal * Constants.Swerve.maxAngularVelocity;
+                if(visionAlignSup.getAsBoolean()) {
+                    rotationVal = s_Swerve.getVisionCorrection();
+                } else {
+                    //normal
+                    rotationVal = rotationVal * Constants.Swerve.maxAngularVelocity;
+                }
                 break;
         }
 

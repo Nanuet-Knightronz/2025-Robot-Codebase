@@ -9,6 +9,12 @@
           "data": {
             "pathName": "goForward"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": null
+          }
         }
       ]
     }
