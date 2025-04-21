@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import frc.robot.SwerveMod;
 import frc.robot.Constants;
-
+import frc.robot.Robot;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -19,15 +19,27 @@ import com.studica.frc.AHRS.NavXComType;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -47,6 +59,14 @@ public class Swerve extends SubsystemBase {
     private Field2d field = new Field2d();
 
     private final PIDController visionPID;
+    private PhotonPoseEstimator photonEstimator;
+
+    public static final AprilTagFieldLayout kTagLayout =
+                AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+    public static final Transform3d kRobotToCam =
+                new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, 0, 0));
+     
 
     //photonvision PID
     private static final double kvP = .02;
@@ -58,10 +78,14 @@ public class Swerve extends SubsystemBase {
         //actually do photon stuff
         camera = new PhotonCamera("USB_Camera");
 
+        photonEstimator = 
+            new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam);
+
         visionPID = new PIDController(kvP, kvI, kvD);
         visionPID.setTolerance(1.0);
 
         this.s_PoseEstimator = s_PoseEstimator;
+        
 
         config = new RobotConfig(
           Constants.AutoConstants.ROBOT_MASS_KG,
@@ -218,9 +242,11 @@ public class Swerve extends SubsystemBase {
     }
     return visionPID.calculate(-yaw, 0); // PID correction
   }
+  
 
     @Override
     public void periodic(){
+        
         swerveOdometry.update(getGyroYaw(), getModulePositions()); 
         //s_PoseEstimator.updateSwerve(getGyroYaw(), getModulePositions());
         field.setRobotPose(getPose());

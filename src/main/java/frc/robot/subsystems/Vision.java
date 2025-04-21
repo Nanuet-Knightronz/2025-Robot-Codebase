@@ -1,65 +1,81 @@
 package frc.robot.subsystems;
 
-import frc.lib.util.Limelight;
-
-import org.littletonrobotics.junction.Logger;
-
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonUtils;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.EstimatedRobotPose;
+
+import frc.robot.Constants;
+
+import org.littletonrobotics.junction.Logger;
+
+import java.io.IOException;
+import java.util.Optional;
+
 public class Vision extends SubsystemBase {
-    private PoseEstimator s_PoseEstimator;
-    public Limelight leftLL;
-    public Limelight rightLL;
+    private final PhotonCamera camera;
+    private final PhotonPoseEstimator photonEstimator;
+    private final PoseEstimator poseEstimator;
 
-    public Vision(PoseEstimator s_PoseEstimator) {
-        this.s_PoseEstimator = s_PoseEstimator;
-        leftLL = new Limelight("LL");
-    }
+    public Vision(PoseEstimator poseEstimator) {
+        this.poseEstimator = poseEstimator;
 
-    public boolean rightHasTarget(){
-        return (rightLL.getBlueBotPose2d().getX() != 0 && rightLL.getBlueBotPose2d().getY() != 0);
-    }
+    camera = new PhotonCamera("USB_Camera");
 
-    public boolean leftHasTarget(){
-        return (leftLL.getBlueBotPose2d().getX() != 0 && leftLL.getBlueBotPose2d().getY() != 0);
-    }
-    
-    public void updateVision(){
-        double Lx = leftLL.getRedBotPose2d().getX();
-        double Ly = leftLL.getRedBotPose2d().getY();
-        double Rx = rightLL.getBlueBotPose2d().getX();
-        double Ry = rightLL.getBlueBotPose2d().getY();
-        boolean Ltarget = (Lx != 0 && Ly != 0);
-        boolean Rtarget = (Rx != 0 && Ry != 0);
-        if(Ltarget && Rtarget){
-            Pose2d LLpose = new Pose2d((Lx + Rx) / 2.0, (Ly + Ry) / 2.0, Rotation2d.fromDegrees(0.0));
-            double LLlatency = (leftLL.getLatency() + rightLL.getLatency()) / 2;
-            s_PoseEstimator.updateVision(LLpose, LLlatency);         
-        }else if(Ltarget){
-            Pose2d LLpose = new Pose2d(Lx, Ly, Rotation2d.fromDegrees(0.0));
-            double LLlatency = leftLL.getLatency();
-            s_PoseEstimator.updateVision(LLpose, LLlatency);  
-        }else if(Rtarget){
-            Pose2d LLpose = new Pose2d(Rx, Ry, Rotation2d.fromDegrees(0.0));
-            double LLlatency = rightLL.getLatency();
-            s_PoseEstimator.updateVision(LLpose, LLlatency);         
-        }
+    AprilTagFieldLayout fieldLayout = AprilTagFields.k2025Reefscape.loadAprilTagLayoutField();
+
+    photonEstimator = new PhotonPoseEstimator(
+        fieldLayout,
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        Constants.VisionConstants.ROBOT_TO_CAMERA
+    );
+    photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
     }
 
     @Override
-    public void periodic(){
-        SmartDashboard.putNumber("left LL, X", leftLL.getBlueBotPose2d().getX());
-        SmartDashboard.putNumber("left LL, Y", leftLL.getBlueBotPose2d().getY());
-        SmartDashboard.putNumber("right LL, X", rightLL.getBlueBotPose2d().getX());
-        SmartDashboard.putNumber("right LL, Y", rightLL.getBlueBotPose2d().getY());
-        Logger.recordOutput("LLLeft Pose", leftLL.getBlueBotPose2d());
-        
-         if(s_PoseEstimator.readyToUpdateVision()){
-            updateVision();
-        } 
-        
+    public void periodic() {
+        PhotonPipelineResult result = camera.getLatestResult();
+        SmartDashboard.putBoolean("Has Vision Target", result.hasTargets());
+
+        if (result.hasTargets() && poseEstimator.readyToUpdateVision()) {
+            Optional<EstimatedRobotPose> estimate = photonEstimator.update(result);
+            if (estimate.isPresent()) {
+                Pose2d estimatedPose = estimate.get().estimatedPose.toPose2d();
+                double timestamp = estimate.get().timestampSeconds;
+                poseEstimator.updateVision(estimatedPose, timestamp);
+
+                SmartDashboard.putNumber("Vision X", estimatedPose.getX());
+                SmartDashboard.putNumber("Vision Y", estimatedPose.getY());
+                SmartDashboard.putNumber("Vision Rotation", estimatedPose.getRotation().getDegrees());
+
+                Logger.recordOutput("Vision Estimated Pose", estimatedPose);
+            }
+        }
+    }
+
+    public boolean hasTarget() {
+        return camera.getLatestResult().hasTargets();
+    }
+
+    public Rotation2d getTargetYaw() {
+        PhotonPipelineResult result = camera.getLatestResult();
+        if (result.hasTargets()) {
+            return Rotation2d.fromDegrees(result.getBestTarget().getYaw());
+        }
+        return new Rotation2d();
+    }
+
+    public PhotonCamera getCamera() {
+        return camera;
     }
 }

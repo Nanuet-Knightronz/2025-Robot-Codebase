@@ -19,7 +19,7 @@ public class PoseEstimator extends SubsystemBase{
     public SwerveDrivePoseEstimator sEstimator;
     public TimeInterpolatableBuffer<Double> turretYawBuffer = TimeInterpolatableBuffer.createDoubleBuffer(1.0);
     public TimeInterpolatableBuffer<Double> gyroYawBuffer = TimeInterpolatableBuffer.createDoubleBuffer(1.0);
-    public Pose2d visionPose = new Pose2d();
+    public Pose2d estimatedPose = new Pose2d();
 
     public PoseEstimator(){
         sEstimator = new SwerveDrivePoseEstimator(
@@ -53,11 +53,11 @@ public class PoseEstimator extends SubsystemBase{
     /** Update estimator with vision data. 
      *  Should only be updated when target is visible.
      * @param LLlatency seconds */
-    public void updateVision(Pose2d LLpose, double LLlatency){
-        double timeStamp = Timer.getFPGATimestamp() - LLlatency;
+    public void updateVision(Pose2d estimatedPose, double timestamp){
+        double timeStamp = timestamp;
         Rotation2d gyro = new Rotation2d(gyroYawBuffer.getSample(timeStamp).get());
         sEstimator.addVisionMeasurement(
-            new Pose2d(LLpose.getX(), LLpose.getY(), gyro),
+            new Pose2d(estimatedPose.getX(), estimatedPose.getY(), gyro),
             timeStamp
         );
     }

@@ -8,6 +8,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
@@ -186,6 +188,13 @@ public final class Constants {
     public static final class PoseEstimator {
         public static final Matrix<N3,N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
         public static final Matrix<N3,N1> visionStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
+    }
+
+    public static class VisionConstants {
+        public static final String CAMERA_NAME = "photonCam";
+        public static final Transform3d ROBOT_TO_CAMERA = new Transform3d(
+        0.2, 0.0, 0.3, new Rotation3d(0, 0, 0)
+    ); // example values
     }
 
 }
