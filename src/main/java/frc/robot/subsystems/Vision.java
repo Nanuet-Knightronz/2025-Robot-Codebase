@@ -19,7 +19,9 @@ import frc.robot.Constants;
 
 import org.littletonrobotics.junction.Logger;
 
+
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public class Vision extends SubsystemBase {
@@ -73,6 +75,10 @@ public class Vision extends SubsystemBase {
             return Rotation2d.fromDegrees(result.getBestTarget().getYaw());
         }
         return new Rotation2d();
+    }
+
+    public PhotonPipelineResult getVisibleTargets() {
+        return camera.getLatestResult();
     }
 
     public PhotonCamera getCamera() {
