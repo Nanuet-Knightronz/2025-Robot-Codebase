@@ -41,6 +41,7 @@ public class RobotContainer {
     private final JoystickButton DynamicLock = new JoystickButton(driver, XboxController.Button.kX.value);
 
     private final JoystickButton photonAlign = new JoystickButton(driver, XboxController.Button.kB.value);
+    private final JoystickButton photonPoseAlign = new JoystickButton(driver, XboxController.Button.kA.value);
 
     private final Trigger forwardHold = new Trigger(() -> (driver.getRawAxis(1) > 0.75));
     private final Trigger backwardHold = new Trigger(() -> (driver.getRawAxis(1) < -0.75));
@@ -93,6 +94,7 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+        photonPoseAlign.onTrue(new PhotonAlignPoseCommand(s_Swerve, s_PoseEstimator, s_PoseEstimator::getEstimatedPosition));
 
 
         // Heading lock bindings

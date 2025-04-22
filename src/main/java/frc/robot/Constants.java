@@ -191,10 +191,16 @@ public final class Constants {
     }
 
     public static class VisionConstants {
-        public static final String CAMERA_NAME = "photonCam";
+        public static final String CAMERA_NAME = "USB_Camera";
         public static final Transform3d ROBOT_TO_CAMERA = new Transform3d(
         0.2, 0.0, 0.3, new Rotation3d(0, 0, 0)
     ); // example values
+    }
+
+    public static class VisionPID {
+        public static final double kvP = .02;
+        public static final double kvI = 0.0;  // Integral gain (Usually 0 for vision)
+        public static final double kvD = 0.001;
     }
 
 }
