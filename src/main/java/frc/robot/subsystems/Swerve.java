@@ -175,6 +175,10 @@ public class Swerve extends SubsystemBase {
         return swerveOdometry.getPoseMeters();
     }
 
+    public Pose2d getPoseEstimate() {
+        return s_PoseEstimator.getEstimatedPosition();
+    }
+
     public void resetOdometry(Pose2d pose) {
         swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose); // First used to be getHeading()
     }
@@ -246,10 +250,11 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic(){
-        
+
         swerveOdometry.update(getGyroYaw(), getModulePositions()); 
-        //s_PoseEstimator.updateSwerve(getGyroYaw(), getModulePositions());
-        field.setRobotPose(getPose());
+        s_PoseEstimator.updateSwerve(getGyroYaw(), getModulePositions());
+        //field.setRobotPose(getPose());
+        field.setRobotPose(getPoseEstimate());
 
         SmartDashboard.putNumber("Get Gyro", getGyroYaw().getDegrees());
         SmartDashboard.putNumber("Get Heading", getHeading().getDegrees());

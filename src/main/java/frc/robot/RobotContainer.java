@@ -52,7 +52,7 @@ public class RobotContainer {
     /* Subsystems */
     private final PoseEstimator s_PoseEstimator = new PoseEstimator();
     private final Swerve s_Swerve = new Swerve(s_PoseEstimator);
-    //private final Vision s_Vision = new Vision(s_PoseEstimator);
+    private final Vision s_Vision = new Vision(s_PoseEstimator);
 
     /* AutoChooser */
     private final SendableChooser<Command> autoChooser;
@@ -94,7 +94,7 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
-        photonPoseAlign.onTrue(new PhotonAlignPoseCommand(s_Swerve, s_PoseEstimator, s_PoseEstimator::getEstimatedPosition));
+        photonPoseAlign.onTrue(new PhotonAlignPoseCommand(s_Swerve, s_PoseEstimator, s_PoseEstimator::getEstimatedPosition, s_Vision));
 
 
         // Heading lock bindings

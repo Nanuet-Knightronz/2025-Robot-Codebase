@@ -45,9 +45,9 @@ public class PhotonAlignPoseCommand extends Command {
     
 
   public PhotonAlignPoseCommand(
-          Swerve s_Swerve, 
+          Swerve s_Swerve,  
           PoseEstimator poseEstimator, 
-          Supplier<Pose2d> poseProvider) { 
+          Supplier<Pose2d> poseProvider, Vision vision) { 
     this.s_Swerve = s_Swerve;
     this.poseEstimator = poseEstimator;
     this.vision = vision;
