@@ -103,6 +103,9 @@ public class Swerve extends SubsystemBase {
             new SwerveMod(3, Constants.Swerve.Mod3.constants)
         };
 
+        Timer.delay(1);
+        resetModulesToAbsolute();
+
         swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getGyroYaw(), getModulePositions());
 
         AutoBuilder.configure(
